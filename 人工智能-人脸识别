@@ -1,0 +1,51 @@
+/*! 
+ * MindPlus 
+ * mpython 
+ * 
+ */ 
+ #include <MPython.h> 
+ #include <DFRobot_Iot.h> 
+ #include <mPython_tinywebdb.h> 
+ #include <DFRobot_HuskyLens.h> 
+ // 静态常量 
+ const String topics[5] = {"RDYMTh2Mg","","","",""}; 
+ // 创建对象 
+ DFRobot_Iot myIot; 
+ mPython_TinyWebDB mydb; 
+ DFRobot_HuskyLens huskylens; 
+     // 主程序开始 
+ void setup() { 
+ mPython.begin(); 
+ myIot.wifiConnect("Redmi", "994783520"); 
+ while (!myIot.wifiStatus()) {yield();} 
+ display.setCursorLine(1); 
+ display.printLine("wifi is ok"); 
+ display.setCursorLine(2); 
+ display.printLine(myIot.getWiFiLocalIP()); 
+ mydb.setServerParameter("http://tinywebdb.appinventor.space/api", "aaaaab","a46a5f05"); 
+ myIot.init("iot.dfrobot.com.cn","0PNAIiFMg","","0ENAImFMgz",topics,1883); 
+ myIot.connect(); 
+ while (!myIot.connected()) {yield();} 
+ display.setCursorLine(3); 
+ display.printLine("mqtt is ok too"); 
+ huskylens.beginI2CUntilSuccess(); 
+ huskylens.writeAlgorithm(ALGORITHM_FACE_RECOGNITION); 
+ } 
+ void loop() { 
+ huskylens.request(); 
+ if (huskylens.isAppearDirect(HUSKYLENSResultBlock)) { 
+ if (huskylens.isAppear(1,HUSKYLENSResultBlock)) { 
+ display.fillInLine(1, 0); 
+ display.setCursorLine(1); 
+ display.printLine(mydb.getTag("1")); 
+ myIot.publish(topic_0, mydb.getTag("1")); 
+ } 
+ if (huskylens.isAppear(2,HUSKYLENSResultBlock)) { 
+ display.fillInLine(2, 0); 
+ display.setCursorLine(2); 
+ display.printLine(mydb.getTag("2")); 
+ myIot.publish(topic_0, mydb.getTag("2")); 
+ display.fillInLine(3, 0); 
+ } 
+ } 
+ } 
